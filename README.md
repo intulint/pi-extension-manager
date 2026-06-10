@@ -13,7 +13,7 @@
 |---------|-----------|------------|
 | `/extensions` | Вкл/выкл расширения и npm/git-пакеты | Требует `/reload` |
 | `/skills` | Вкл/выкл скиллы (навыки) | Требует `/reload` |
-| `/tools` | Вкл/выкл runtime-инструменты (read, bash, …) | **Мгновенно**, без reload |
+| `/tools` | Вкл/выкл runtime-инструменты (все зарегистрированные) | **Мгновенно**, без reload |
 
 **Горячие клавиши:** `Ctrl+Shift+E` → `/extensions`, `Ctrl+Shift+T` → `/tools`, `Ctrl+Shift+S` → `/skills`
 
@@ -99,7 +99,7 @@ pi-extension-manager/
 │   ├── skill-menu.ts     ← команда /skills
 │   ├── tool-menu.ts      ← команда /tools + session restore
 │   └── shortcuts.ts      ← горячие клавиши Ctrl+Shift+E/T/S
-├── ARCHITECTURE.md       ← подробная архитектура, диаграммы, потоки
+├── ARCHITECTURE.md       ← подробная архитектура, потоки данных, заметки
 └── package.json          ← метаданные пакета
 ```
 
