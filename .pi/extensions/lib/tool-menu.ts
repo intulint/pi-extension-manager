@@ -12,25 +12,61 @@ export function registerToolMenu(pi: ExtensionAPI): void {
 
   // ── Restore state from session history ───────────────────────────────────
 
+  interface ToolsState {
+    enabledTools: string[];
+    allToolsSnapshot: string[];
+  }
+
   function restoreState(ctx: ExtensionContext) {
     allTools = pi.getAllTools();
-    enabledTools = new Set(pi.getActiveTools());
+    const allNames = allTools.map((t) => t.name);
 
+    // Find the LAST saved state from session history
     const branch = ctx.sessionManager.getBranch();
+    let savedState: ToolsState | undefined;
     for (const entry of branch) {
       if (entry.type === "custom" && entry.customType === "ext-manager-tools") {
-        const data = entry.data as { enabledTools: string[] } | undefined;
+        const data = entry.data as ToolsState | undefined;
         if (data?.enabledTools) {
-          const allNames = allTools.map((t) => t.name);
-          enabledTools = new Set(data.enabledTools.filter((t) => allNames.includes(t)));
-          pi.setActiveTools(Array.from(enabledTools));
+          savedState = data;
         }
       }
+    }
+
+    if (savedState) {
+      const savedSet = new Set(savedState.enabledTools.filter((t) => allNames.includes(t)));
+      const oldTools = savedState.allToolsSnapshot
+        ? new Set(savedState.allToolsSnapshot)
+        : new Set<string>();
+
+      // MERGE: start from all current tools, apply saved preferences
+      enabledTools = new Set<string>();
+      for (const name of allNames) {
+        if (savedSet.has(name)) {
+          // Tool was enabled in saved state → enable
+          enabledTools.add(name);
+        } else if (oldTools.has(name)) {
+          // Tool existed when saved, but was disabled by user → keep disabled
+          // (don't add to enabledTools)
+        } else {
+          // NEW tool (didn't exist when state was saved) → enable by default
+          enabledTools.add(name);
+        }
+      }
+
+      pi.setActiveTools(Array.from(enabledTools));
+    } else {
+      // No saved state — sync with currently active tools
+      enabledTools = new Set(pi.getActiveTools());
     }
   }
 
   function persistTools() {
-    pi.appendEntry("ext-manager-tools", { enabledTools: Array.from(enabledTools) });
+    const allToolsSnapshot = allTools.map((t) => t.name);
+    pi.appendEntry<ToolsState>("ext-manager-tools", {
+      enabledTools: Array.from(enabledTools),
+      allToolsSnapshot,
+    });
   }
 
   // ── Session events ───────────────────────────────────────────────────────
@@ -49,6 +85,8 @@ export function registerToolMenu(pi: ExtensionAPI): void {
       }
 
       allTools = pi.getAllTools();
+      // Refresh enabledTools from current active tools (not stale module-level value)
+      enabledTools = new Set(pi.getActiveTools());
       if (allTools.length === 0) {
         ctx.ui.notify("No tools registered", "warning");
         return;
