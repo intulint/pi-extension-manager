@@ -3,3 +3,9 @@ node_modules/
 *.bak
 *.log
 .DS_Store
+
+# Local pi settings (project-specific)
+.pi/
+
+# Internal development docs
+DEVELOPMENT.md

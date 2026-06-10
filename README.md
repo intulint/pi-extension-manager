@@ -1,142 +1,137 @@
 # pi-extension-manager
 
-Интерактивное расширение для **pi-coding-agent** — подменю для управления расширениями, пакетами, скиллами и инструментами.
+> Интерактивное TUI-расширение для **pi-coding-agent** — управление расширениями,
+> пакетами, скиллами и инструментами прямо из командной строки pi.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
 
 ## Возможности
 
-### 📦 `/extensions` — расширения и пакеты
+| Команда | Что делает | Применение |
+|---------|-----------|------------|
+| `/extensions` | Вкл/выкл расширения и npm/git-пакеты | Требует `/reload` |
+| `/skills` | Вкл/выкл скиллы (навыки) | Требует `/reload` |
+| `/tools` | Вкл/выкл runtime-инструменты (read, bash, …) | **Мгновенно**, без reload |
 
-Комбинированное меню для управления расширениями и пакетами.
+**Горячие клавиши:** `Ctrl+Shift+E` → `/extensions`, `Ctrl+Shift+T` → `/tools`, `Ctrl+Shift+S` → `/skills`
 
-- Показывает все расширения из ключа `extensions` и пакеты из ключа `packages` в `settings.json`
-- Каждый элемент помечен типом: `[Extension]` или `[Package]`
-- Состояние записывается в `settings.json` (с префиксом `-` для отключённых)
-- Требуется `/reload` для применения
-
-### 🛠️ `/skills` — управление скиллами
-
-Отдельное меню для управления скиллами.
-
-- Показывает все скиллы из ключа `skills` в `settings.json`
-- Состояние записывается в `settings.json`
-- Требуется `/reload` для применения
-
-### 🔧 `/tools` — управление инструментами
-
-Список всех доступных инструментов (тулзов). Переключение в реальном времени без перезагрузки.
-
-- Мгновенное применение через `pi.setActiveTools()`
-- Состояние сохраняется между сессиями
-- Работает только в TUI-режиме
+---
 
 ## Установка
 
-### Глобально (для всех проектов)
-
 ```bash
+# Вариант 1: глобально (для всех проектов)
 mkdir -p ~/.pi/agent/extensions/pi-extension-manager
-cp index.ts ~/.pi/agent/extensions/pi-extension-manager/
-cp -r lib ~/.pi/agent/extensions/pi-extension-manager/
-```
+cp -r index.ts lib ~/.pi/agent/extensions/pi-extension-manager/
 
-Или через симлинк для разработки:
-
-```bash
+# Вариант 2: симлинк для разработки
 ln -sf "$(pwd)" ~/.pi/agent/extensions/pi-extension-manager
-```
 
-### Для одного проекта
-
-```bash
+# Вариант 3: для одного проекта
 mkdir -p .pi/extensions/pi-extension-manager
-cp index.ts .pi/extensions/pi-extension-manager/
-cp -r lib .pi/extensions/pi-extension-manager/
+cp -r index.ts lib .pi/extensions/pi-extension-manager/
 ```
 
-### Через `pi install` (из npm-пакета в будущем)
+После установки — `/reload` в pi.
 
-```bash
-pi install npm:pi-extension-manager
-```
+---
 
-## Использование
+## Как это работает
 
-После установки перезагрузи pi (`/reload` или `Ctrl+R`) и используй:
-
-| Команда | Действие |
-|---------|----------|
-| `/extensions` | Открыть менеджер расширений и пакетов |
-| `/skills` | Открыть менеджер скиллов |
-| `/tools` | Открыть менеджер инструментов |
-
-### Горячие клавиши
-
-| Клавиши | Действие |
-|---------|----------|
-| `Ctrl+Shift+E` | Открыть менеджер расширений и пакетов |
-| `Ctrl+Shift+T` | Открыть менеджер инструментов |
-| `Ctrl+Shift+S` | Открыть менеджер скиллов |
-
-## Интерфейс
-
-### Меню расширений и пакетов
+### /extensions и /skills — persistent (settings.json)
 
 ```
-Extension & Package Manager
-───────────────────────────
- 1. ✅  pi-extension-toolkit    [Extension]
- 2. ❌  pi-mcp-adapter          [Extension]
- 3. ✅  pi-subagents            [Package]
- 4. ✅  pi-local-model          [Package]
-...
+User: /extensions
+  │
+  ├─ buildExtPackageList()
+  │   ├─ читает ~/.pi/agent/settings.json (user)
+  │   ├─ читает .pi/settings.json (project, если есть)
+  │   └─ сливает: project поверх user
+  │
+  ├─ TUI: список с toggle-элементами
+  │
+  └─ saveExtPackageList(items)
+      └─ записывает в settings.json с префиксом '-'
 ```
 
-### Меню скиллов
+Формат `settings.json`:
 
-```
-Skill Manager
-─────────────────
- 1. ✅  create-skill
- 2. ✅  local-llm-config
- 3. ✅  workspace-catalog
-...
-```
-
-### Меню инструментов
-
-```
-Tool Manager
-Active: 5/12 tools
-─────────────────
- 1. ✅  read
- 2. ✅  bash
- 3. ❌  edit
-...
+```jsonc
+{
+  "extensions": ["npm:pi-subagents", "-git:github.com/user/repo"],
+  "packages": ["https://github.com/org/pkg"],
+  "skills": ["/path/to/skill", "-/path/to/disabled"]
+}
 ```
 
-## Структура
+**Правила префиксов:**
+- `-` перед путём = disabled
+- Без префикса = enabled
+- При сохранении `getBase()` чистит все ведущие `-`, добавляет один
+
+### /tools — runtime (сессия pi)
+
+```
+User: /tools
+  │
+  ├─ pi.getAllTools()       ← все зарегистрированные инструменты
+  ├─ pi.getActiveTools()    ← текущие включённые
+  │
+  ├─ TUI: список с toggle
+  │   └─ toggle → pi.setActiveTools() МГНОВЕННО
+  │
+  └─ закрытие → persistTools() → pi.appendEntry() в сессию
+```
+
+**Восстановление после /reload:** `restoreState()` находит последнюю запись
+в истории сессии, применяет merge:
+- Инструменты из сохранённого состояния — как было
+- **Новые инструменты** (появились после сохранения) — **включаются по умолчанию**
+
+---
+
+## Структура проекта
 
 ```
 pi-extension-manager/
-├── index.ts              ← точка входа (расширение для pi)
+├── index.ts              ← точка входа (default export)
 ├── lib/
-│   ├── settings.ts       ← чтение/запись settings.json
-│   ├── extension-menu.ts ← /extensions
-│   ├── skill-menu.ts     ← /skills
-│   ├── tool-menu.ts      ← /tools
-│   └── shortcuts.ts      ← горячие клавиши
-├── ARCHITECTURE.md
-├── README.md
-└── DEVELOPMENT.md
+│   ├── settings.ts       ← I/O settings.json: build/save, user+project merge
+│   ├── extension-menu.ts ← команда /extensions
+│   ├── skill-menu.ts     ← команда /skills
+│   ├── tool-menu.ts      ← команда /tools + session restore
+│   └── shortcuts.ts      ← горячие клавиши Ctrl+Shift+E/T/S
+├── ARCHITECTURE.md       ← подробная архитектура, диаграммы, потоки
+├── DEVELOPMENT.md        ← история багов и принятых решений
+└── package.json          ← метаданные пакета
 ```
+
+> **Почему `lib/`?** Pi сканирует все `.ts`-файлы в корне расширения.
+> Хелперы должны быть в подпапке, иначе pi попытается загрузить их
+> как отдельные расширения.
+
+---
 
 ## Зависимости
 
-- `@earendil-works/pi-coding-agent` (peer)
-- `@earendil-works/pi-tui` (peer)
-- `typebox` (peer)
+| Пакет | Версия | Тип |
+|-------|--------|-----|
+| `@earendil-works/pi-coding-agent` | ^0.79.0 | peer |
+| `@earendil-works/pi-tui` | * | peer |
+| `typebox` | * | peer |
 
-Все зависимости уже доступны в pi, устанавливать ничего дополнительно не нужно.
+Все зависимости уже есть в pi — устанавливать ничего не нужно.
+
+---
+
+## Ссылки
+
+- [Архитектура](ARCHITECTURE.md) — полное описание потоков управления, data layer,
+  TUI-компонентов, диаграммы
+
+---
 
 ## License
 

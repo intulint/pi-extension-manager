@@ -1,0 +1,20 @@
+{
+  "name": "pi-extension-manager",
+  "version": "1.0.0",
+  "description": "Interactive TUI extension for pi-coding-agent — manage extensions, packages, skills and tools",
+  "keywords": [
+    "pi-coding-agent",
+    "pi-extension",
+    "pi",
+    "extension-manager"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.79.0",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
