@@ -34,12 +34,14 @@
 ### Глобально (для всех проектов)
 
 ```bash
-# Установка глобально (для всех проектов)
 mkdir -p ~/.pi/agent/extensions/pi-extension-manager
 cp index.ts ~/.pi/agent/extensions/pi-extension-manager/
 cp -r lib ~/.pi/agent/extensions/pi-extension-manager/
+```
 
-# Или через ссылку для разработки
+Или через симлинк для разработки:
+
+```bash
 ln -sf "$(pwd)" ~/.pi/agent/extensions/pi-extension-manager
 ```
 
@@ -50,9 +52,8 @@ mkdir -p .pi/extensions/pi-extension-manager
 cp index.ts .pi/extensions/pi-extension-manager/
 cp -r lib .pi/extensions/pi-extension-manager/
 ```
-```
 
-### Или через `pi install` (из npm-пакета в будущем)
+### Через `pi install` (из npm-пакета в будущем)
 
 ```bash
 pi install npm:pi-extension-manager
@@ -125,7 +126,7 @@ pi-extension-manager/
 │   ├── tool-menu.ts      ← /tools
 │   └── shortcuts.ts      ← горячие клавиши
 ├── README.md
-└── PROJECT.md
+└── DEVELOPMENT.md
 ```
 
 ## Зависимости
