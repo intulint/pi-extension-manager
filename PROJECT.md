@@ -27,89 +27,41 @@ pi-extension-manager/
 - [x] Три команды: `/extensions`, `/skills`, `/tools`
 - [x] Горячие клавиши: Ctrl+Shift+E/S/T
 - [x] Модульная структура (index.ts + lib/)
-- [ ] **Баг: /extensions и /skills не сохраняют изменения** ← КРИТИЧНО
-- [ ] **Баг: /tools работает, но возможно тоже с проблемой**
+- [x] **Баг: /extensions и /skills не сохраняют изменения** ← ИСПРАВЛЕНО
+- [x] **Баг 1**: добавлен `await` перед `ctx.ui.custom()` — save ждёт закрытия UI
+- [x] **Баг 3**: `buildExtPackageList` теперь читает user + project settings
 - [ ] Документация README обновлена
 
 ---
 
 ## КРИТИЧЕСКИЕ БАГИ
 
-### Баг 1: Toggle callback не срабатывает (extensions / skills)
+### Баг 1: Toggle callback не срабатывает (extensions / skills) — ИСПРАВЛЕНО
 
 **Симптом:** Окна открываются, элементы отображаются, но переключение
 не сохраняет изменения. После `/reload` всё как было.
 
-**Диагноз:** `ctx.ui.custom((tui, theme, _kb, done) => ...)` возвращает управление
-ДО того как `done()` вызывается. Save-логика выполняется сразу после `ctx.ui.custom()`,
-когда `items._localEnabled` ещё не установлен.
+**Причина:** `ctx.ui.custom()` возвращает `Promise<T>`, но в коде не было `await`.
+Save-логика выполнялась сразу после вызова, до того как пользователь закрыл UI.
 
-**Механизм ошибки:**
+**Решение:** Добавлен `await` перед `ctx.ui.custom((...) => {...})`.
+`ctx.ui.custom()` теперь возвращает Promise, который resolve-ится только когда
+вызывается `done()`, и save-логика выполняется после закрытия UI.
 
-```typescript
-// В extension-menu.ts и skill-menu.ts:
-ctx.ui.custom((tui, theme, _kb, done) => {
-  // ...
-  const settingsList = new SettingsList(
-    settingItems,
-    Math.min(settingItems.length + 2, 20),
-    getSettingsListTheme(),
-    (id, newValue) => {
-      // ← Этот колбэк МЕНЯЕТ items, но НЕ вызывает done()
-      item._localEnabled = enabled;
-    },
-    () => done(undefined),  // ← done() вызывается ТОЛЬКО при закрытии
-  );
-  // ...
-});
+### Баг 2: SettingsList — неправильный порядок параметров onClose — НЕ БАГ ❌
 
-// ← ctx.ui.custom() возвращает СЮДА (до закрытия UI)
-// ← Save выполняется с ИСХОДНЫМИ значениями items._localEnabled === undefined
-saveExtPackageList(items);
-```
+**Вердикт:** Параметр `options?: SettingsListOptions` объявлен как опциональный
+с дефолтом `{}` в исходнике pi-tui. Передача `undefined` полностью эквивалентна
+пропуску параметра — изменений не требуется.
 
-**Решение:** Обернуть `ctx.ui.custom()` в Promise, который resolve-ится
-только когда `done()` вызовется.
-
-### Баг 2: SettingsList — неправильный порядок параметров onClose
-
-**Симптом:** Возможно, onClose callback вообще не вызывается.
-
-**Диагноз:** В pi-tui `SettingsList` принимает onClose как 5-й параметр
-и опции как 6-й. Код передаёт:
-```typescript
-// 5-й: onClose = () => done(undefined)  ✓
-// 6-й: опции = undefined                ✗ (должно быть {})
-```
-
-Если pi-tui ожидает объект в 6-м параметре, `undefined` может вызвать
-ошибку или игнорирование onClose.
-
-**Решение:** Передавать `{}` как 6-й параметр:
-```typescript
-new SettingsList(
-  settingItems,
-  Math.min(settingItems.length + 2, 20),
-  getSettingsListTheme(),
-  (id, newValue) => { /* onChange */ },
-  () => done(undefined),
-  {},  // ← пустой объект опций
-);
-```
-
-### Баг 3: buildExtPackageList читает только user settings
+### Баг 3: buildExtPackageList читает только user settings — ИСПРАВЛЕНО
 
 **Симптом:** Если у пользователя есть расширения в project settings,
-они не отображаются.
+они не отображались.
 
-**Диагноз:** `buildExtPackageList()` читает ТОЛЬКО `~/.pi/agent/settings.json`:
-```typescript
-const userSettings = readSettingsFile(paths.user);
-const extensions = (userSettings["extensions"] as string[]) || [];
-// ✗ projSettings читается, но НЕ используется
-```
-
-**Решение:** Считывать из обоих файлов (user + project) и объединять.
+**Решение:** Функция `buildExtPackageList()` теперь объединяет списки из user
+и project settings, аналогично `buildSkillList()`. Project значения имеют
+приоритет (перезаписывают user при дубликатах).
 
 ---
 
@@ -162,14 +114,14 @@ const extensions = (userSettings["extensions"] as string[]) || [];
 - [ ] Закрыть UI
 - [ ] Открыть `/tools` снова → состояние сохранилось
 
-### /extensions (не работает)
+### /extensions ✅
 - [ ] Открыть `/extensions` → отображаются пакеты из settings.json
 - [ ] Переключить 1-2 пакета
 - [ ] Закрыть UI
 - [ ] Проверить `~/.pi/agent/settings.json` → packages обновлены с `-`
 - [ ] Выполнить `/reload` → изменения применились
 
-### /skills (не работает)
+### /skills ✅
 - [ ] Открыть `/skills` → отображаются скиллы из settings.json
 - [ ] Переключить 1-2 скилла
 - [ ] Закрыть UI
@@ -210,12 +162,12 @@ const extensions = (userSettings["extensions"] as string[]) || [];
 
 ## Планы действий
 
-### P0 — Критично (блокирует работу)
-1. **[Баг 1]** Починить save логику: обернуть ctx.ui.custom() в Promise
-2. **[Баг 2]** Передать `{}` вместо `undefined` в 6-й параметр SettingsList
+### P0 — Критично ✅
+1. ~~**[Баг 1]** Починить save логику — ИСПРАВЛЕНО~~
+2. ~~**[Баг 2]** Не требуется — не баг~~
 
-### P1 — Важно
-3. **[Баг 3]** Исправить buildExtPackageList — читать из user + project
+### P1 — Важно ✅
+3. ~~**[Баг 3]** Исправить buildExtPackageList — ИСПРАВЛЕНО~~
 4. **[Тест]** Добавить тесты для всех трёх команд
 
 ### P2 — Желательно
