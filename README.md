@@ -125,6 +125,7 @@ pi-extension-manager/
 │   ├── skill-menu.ts     ← /skills
 │   ├── tool-menu.ts      ← /tools
 │   └── shortcuts.ts      ← горячие клавиши
+├── ARCHITECTURE.md
 ├── README.md
 └── DEVELOPMENT.md
 ```
