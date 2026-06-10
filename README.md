@@ -26,14 +26,11 @@
 pi install https://github.com/intulint/pi-extension-manager
 
 # Вариант 2: для одного проекта
-mkdir -p .pi/extensions
-pi install https://github.com/intulint/pi-extension-manager .pi/extensions/pi-extension-manager
+git clone https://github.com/intulint/pi-extension-manager .pi/extensions/pi-extension-manager
 
 # Вариант 3: вручную
 git clone https://github.com/intulint/pi-extension-manager ~/.pi/agent/extensions/pi-extension-manager
 ```
-
-После установки — `/reload` в pi.
 
 После установки — `/reload` в pi.
 
@@ -123,10 +120,6 @@ pi-extension-manager/
 | `typebox` | * | peer |
 
 Все зависимости уже есть в pi — устанавливать ничего не нужно.
-
----
-
-
 
 ---
 
