@@ -25,7 +25,7 @@
 # Вариант 1: глобально (рекомендуется)
 pi install https://github.com/intulint/pi-extension-manager
 
-# Вариант 2: локально в проект
+# Вариант 2: скачать копию и установить
 git clone https://github.com/intulint/pi-extension-manager
 pi install ./pi-extension-manager
 ```
