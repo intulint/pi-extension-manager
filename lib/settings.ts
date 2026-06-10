@@ -49,7 +49,7 @@ function isDisabled(item: string): boolean {
 }
 
 function getBase(item: string): string {
-  return item.replace(/^-/, "");
+  return item.replace(/^-+/, "");
 }
 
 function labelFromSource(src: string): string {
@@ -172,7 +172,8 @@ export function saveExtPackageList(items: ExtPackageItem[]): void {
   for (const item of items) {
     // Приоритет: _localEnabled (из UI), иначе enabled
     const enabled = (item as any)._localEnabled ?? item.enabled;
-    const entry = enabled ? item.raw : `-${item.raw}`;
+    const cleanRaw = getBase(item.raw);
+    const entry = enabled ? cleanRaw : `-${cleanRaw}`;
     if (item.type === "extension") extOutput.push(entry);
     else pkgOutput.push(entry);
   }
@@ -195,7 +196,8 @@ export function saveSkillList(items: SkillItem[]): void {
 
   const skillOutput: string[] = items.map((item) => {
     const enabled = (item as any)._localEnabled ?? item.enabled;
-    return enabled ? item.raw : `-${item.raw}`;
+    const cleanRaw = getBase(item.raw);
+    return enabled ? cleanRaw : `-${cleanRaw}`;
   });
 
   (file as any)["skills"] = skillOutput;
