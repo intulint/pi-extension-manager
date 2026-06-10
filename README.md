@@ -34,15 +34,22 @@
 ### Глобально (для всех проектов)
 
 ```bash
-mkdir -p ~/.pi/agent/extensions
-cp -r .pi/extensions/pi-extension-manager ~/.pi/agent/extensions/
+# Установка глобально (для всех проектов)
+mkdir -p ~/.pi/agent/extensions/pi-extension-manager
+cp index.ts ~/.pi/agent/extensions/pi-extension-manager/
+cp -r lib ~/.pi/agent/extensions/pi-extension-manager/
+
+# Или через ссылку для разработки
+ln -sf "$(pwd)" ~/.pi/agent/extensions/pi-extension-manager
 ```
 
 ### Для одного проекта
 
 ```bash
-mkdir -p .pi/extensions
-cp -r .pi/extensions/pi-extension-manager .pi/extensions/
+mkdir -p .pi/extensions/pi-extension-manager
+cp index.ts .pi/extensions/pi-extension-manager/
+cp -r lib .pi/extensions/pi-extension-manager/
+```
 ```
 
 ### Или через `pi install` (из npm-пакета в будущем)
@@ -110,17 +117,15 @@ Active: 5/12 tools
 
 ```
 pi-extension-manager/
+├── index.ts              ← точка входа (расширение для pi)
+├── lib/
+│   ├── settings.ts       ← чтение/запись settings.json
+│   ├── extension-menu.ts ← /extensions
+│   ├── skill-menu.ts     ← /skills
+│   ├── tool-menu.ts      ← /tools
+│   └── shortcuts.ts      ← горячие клавиши
 ├── README.md
-└── .pi/
-    └── extensions/
-        └── pi-extension-manager/
-            ├── index.ts              ← точка входа (расширение для pi)
-            └── lib/
-                ├── settings.ts       ← чтение/запись settings.json
-                ├── extension-menu.ts ← /extensions
-                ├── skill-menu.ts     ← /skills
-                ├── tool-menu.ts      ← /tools
-                └── shortcuts.ts      ← горячие клавиши
+└── PROJECT.md
 ```
 
 ## Зависимости

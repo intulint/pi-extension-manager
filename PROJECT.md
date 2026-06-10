@@ -9,17 +9,15 @@
 
 ```
 pi-extension-manager/
+├── index.ts              ← точка входа (экспортирует default function)
+├── lib/                  ← helpers (не сканируются pi)
+│   ├── settings.ts       ← I/O settings.json + build/save функции
+│   ├── extension-menu.ts ← /extensions
+│   ├── skill-menu.ts     ← /skills
+│   ├── tool-menu.ts      ← /tools
+│   └── shortcuts.ts      ← горячие клавиши
 ├── README.md
-└── .pi/
-    └── extensions/
-        └── pi-extension-manager/
-            ├── index.ts              ← точка входа (экспортирует default function)
-            └── lib/                  ← helpers (не сканируются pi)
-                ├── settings.ts       ← I/O settings.json + build/save функции
-                ├── extension-menu.ts ← /extensions
-                ├── skill-menu.ts     ← /skills
-                ├── tool-menu.ts      ← /tools
-                └── shortcuts.ts      ← горячие клавиши
+└── PROJECT.md
 ```
 
 ## Текущий статус
