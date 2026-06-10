@@ -104,7 +104,6 @@ pi-extension-manager/
 │   ├── tool-menu.ts      ← команда /tools + session restore
 │   └── shortcuts.ts      ← горячие клавиши Ctrl+Shift+E/T/S
 ├── ARCHITECTURE.md       ← подробная архитектура, диаграммы, потоки
-├── DEVELOPMENT.md        ← история багов и принятых решений
 └── package.json          ← метаданные пакета
 ```
 
@@ -126,10 +125,7 @@ pi-extension-manager/
 
 ---
 
-## Ссылки
 
-- [Архитектура](ARCHITECTURE.md) — полное описание потоков управления, data layer,
-  TUI-компонентов, диаграммы
 
 ---
 

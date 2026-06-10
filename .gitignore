@@ -8,4 +8,4 @@ node_modules/
 .pi/
 
 # Internal development docs
-DEVELOPMENT.md
+README_DEV.md
