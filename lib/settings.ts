@@ -149,7 +149,7 @@ export function buildSkillList(): SkillItem[] {
 
   return allSkills.map((skillPath) => ({
     raw: skillPath,
-    enabled: true,
+    enabled: !isDisabled(skillPath),
     displayName: path.basename(skillPath),
   }));
 }

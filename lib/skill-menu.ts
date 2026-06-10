@@ -80,12 +80,12 @@ export function registerSkillMenu(pi: ExtensionAPI): void {
         (i) => i._localEnabled !== undefined && i._localEnabled !== i.enabled
       ).length;
 
-      saveSkillList(items);
-
-      ctx.ui.notify(
-        toggled > 0 ? `${toggled} skill(s) toggled. Run /reload to apply.` : "No changes made",
-        toggled > 0 ? "info" : "warning",
-      );
+      if (toggled > 0) {
+        saveSkillList(items);
+        ctx.ui.notify(`${toggled} skill(s) toggled. Run /reload to apply.`, "info");
+      } else {
+        ctx.ui.notify("No changes made", "warning");
+      }
     },
   });
 }
