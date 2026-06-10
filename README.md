@@ -35,14 +35,14 @@
 
 ```bash
 mkdir -p ~/.pi/agent/extensions
-cp -r .pi/extensions/* ~/.pi/agent/extensions/
+cp -r .pi/extensions/pi-extension-manager ~/.pi/agent/extensions/
 ```
 
 ### Для одного проекта
 
 ```bash
 mkdir -p .pi/extensions
-cp -r .pi/extensions/* .pi/extensions/
+cp -r .pi/extensions/pi-extension-manager .pi/extensions/
 ```
 
 ### Или через `pi install` (из npm-пакета в будущем)
@@ -113,13 +113,14 @@ pi-extension-manager/
 ├── README.md
 └── .pi/
     └── extensions/
-        ├── index.ts              ← точка входа (расширение для pi)
-        └── lib/
-            ├── settings.ts       ← чтение/запись settings.json
-            ├── extension-menu.ts ← /extensions
-            ├── skill-menu.ts     ← /skills
-            ├── tool-menu.ts      ← /tools
-            └── shortcuts.ts      ← горячие клавиши
+        └── pi-extension-manager/
+            ├── index.ts              ← точка входа (расширение для pi)
+            └── lib/
+                ├── settings.ts       ← чтение/запись settings.json
+                ├── extension-menu.ts ← /extensions
+                ├── skill-menu.ts     ← /skills
+                ├── tool-menu.ts      ← /tools
+                └── shortcuts.ts      ← горячие клавиши
 ```
 
 ## Зависимости
