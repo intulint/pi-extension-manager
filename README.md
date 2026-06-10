@@ -26,8 +26,8 @@
 pi install https://github.com/intulint/pi-extension-manager
 
 # Вариант 2: локально в проект
-git clone https://github.com/intulint/pi-extension-manager .pi/extensions/pi-extension-manager
-pi install .pi/extensions/pi-extension-manager
+git clone https://github.com/intulint/pi-extension-manager
+pi install ./pi-extension-manager
 ```
 
 После установки — `/reload` в pi.
