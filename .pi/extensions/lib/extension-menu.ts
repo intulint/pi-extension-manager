@@ -25,7 +25,6 @@ export function registerExtensionMenu(pi: ExtensionAPI): void {
         values: ["enabled", "disabled"],
       }));
 
-      // Local state for the session
       for (const item of items) {
         item._localEnabled = item.enabled;
       }
@@ -77,7 +76,6 @@ export function registerExtensionMenu(pi: ExtensionAPI): void {
         };
       });
 
-      // Save changes after UI closes
       const toggled = items.filter(
         (i) => i._localEnabled !== undefined && i._localEnabled !== i.enabled
       ).length;

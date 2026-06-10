@@ -1,6 +1,6 @@
 # pi-extension-manager
 
-Интерактивное расширение для **pi-coding-agent** — подменю для управления расширениями, пакетами и инструментами.
+Интерактивное расширение для **pi-coding-agent** — подменю для управления расширениями, пакетами, скиллами и инструментами.
 
 ## Возможности
 
@@ -35,14 +35,14 @@
 
 ```bash
 mkdir -p ~/.pi/agent/extensions
-cp extension-manager.ts ~/.pi/agent/extensions/
+cp -r .pi/extensions/* ~/.pi/agent/extensions/
 ```
 
 ### Для одного проекта
 
 ```bash
 mkdir -p .pi/extensions
-cp extension-manager.ts .pi/extensions/
+cp -r .pi/extensions/* .pi/extensions/
 ```
 
 ### Или через `pi install` (из npm-пакета в будущем)
@@ -113,12 +113,13 @@ pi-extension-manager/
 ├── README.md
 └── .pi/
     └── extensions/
-        ├── extension-manager.ts   ← точка входа (30 строк)
-        ├── settings.ts            ← чтение/запись settings.json
-        ├── extension-menu.ts      ← /extensions (расширения + пакеты)
-        ├── skill-menu.ts          ← /skills
-        ├── tool-menu.ts           ← /tools (инструменты)
-        └── shortcuts.ts           ← горячие клавиши
+        ├── index.ts              ← точка входа (расширение для pi)
+        └── lib/
+            ├── settings.ts       ← чтение/запись settings.json
+            ├── extension-menu.ts ← /extensions
+            ├── skill-menu.ts     ← /skills
+            ├── tool-menu.ts      ← /tools
+            └── shortcuts.ts      ← горячие клавиши
 ```
 
 ## Зависимости

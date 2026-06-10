@@ -16,10 +16,10 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-import { registerExtensionMenu } from "./extension-menu.js";
-import { registerSkillMenu } from "./skill-menu.js";
-import { registerToolMenu } from "./tool-menu.js";
-import { registerShortcuts } from "./shortcuts.js";
+import { registerExtensionMenu } from "./lib/extension-menu.js";
+import { registerSkillMenu } from "./lib/skill-menu.js";
+import { registerToolMenu } from "./lib/tool-menu.js";
+import { registerShortcuts } from "./lib/shortcuts.js";
 
 export default function (pi: ExtensionAPI) {
   registerExtensionMenu(pi);
