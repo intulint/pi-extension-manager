@@ -22,15 +22,15 @@
 ## Установка
 
 ```bash
-# Вариант 1: через git (рекомендуется)
-mkdir -p ~/.pi/agent/extensions
-git clone https://github.com/intulint/pi-extension-manager ~/.pi/agent/extensions/pi-extension-manager
+# Вариант 1: через pi install
+pi install https://github.com/intulint/pi-extension-manager
 
 # Вариант 2: для одного проекта
-git clone https://github.com/intulint/pi-extension-manager .pi/extensions/pi-extension-manager
+mkdir -p .pi/extensions
+pi install https://github.com/intulint/pi-extension-manager .pi/extensions/pi-extension-manager
 
-# Вариант 3: скачать архив
-# GitHub → Code → Download ZIP → распаковать в ~/.pi/agent/extensions/pi-extension-manager/
+# Вариант 3: вручную
+git clone https://github.com/intulint/pi-extension-manager ~/.pi/agent/extensions/pi-extension-manager
 ```
 
 После установки — `/reload` в pi.
