@@ -9,6 +9,9 @@
     "extension-manager"
   ],
   "license": "MIT",
+  "pi": {
+       "extensions": ["./index.ts"]
+  },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "^0.79.0",
     "@earendil-works/pi-tui": "*",
