@@ -5,7 +5,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getSettingsListTheme } from "@earendil-works/pi-coding-agent";
 import { Container, SettingsList } from "@earendil-works/pi-tui";
-import { buildExtPackageList, saveExtPackageList, type ExtPackageItem } from "./settings.js";
+import { buildExtPackageList, saveExtPackageList, DEFAULT_MAX_VISIBLE, type ExtPackageItem } from "./settings.js";
 
 export function registerExtensionMenu(pi: ExtensionAPI): void {
   pi.registerCommand("extensions", {
@@ -42,7 +42,7 @@ export function registerExtensionMenu(pi: ExtensionAPI): void {
 
         const settingsList = new SettingsList(
           settingItems,
-          Math.min(settingItems.length + 2, 20),
+          DEFAULT_MAX_VISIBLE,
           getSettingsListTheme(),
           (id, newValue) => {
             const enabled = newValue === "enabled";

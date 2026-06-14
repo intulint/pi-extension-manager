@@ -5,6 +5,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
+// ── Constants ────────────────────────────────────────────────────────────────
+
+/** Default maximum visible items in TUI SettingsList. */
+export const DEFAULT_MAX_VISIBLE = 20;
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface ExtPackageItem {

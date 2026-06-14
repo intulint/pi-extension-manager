@@ -5,6 +5,7 @@
 import type { ExtensionAPI, ExtensionContext, ToolInfo } from "@earendil-works/pi-coding-agent";
 import { getSettingsListTheme } from "@earendil-works/pi-coding-agent";
 import { Container, SettingsList } from "@earendil-works/pi-tui";
+import { DEFAULT_MAX_VISIBLE } from "./settings.js";
 
 export function registerToolMenu(pi: ExtensionAPI): void {
   let allTools: ToolInfo[] = [];
@@ -117,7 +118,7 @@ export function registerToolMenu(pi: ExtensionAPI): void {
 
         const settingsList = new SettingsList(
           settingItems,
-          Math.min(settingItems.length + 2, 20),
+          DEFAULT_MAX_VISIBLE,
           getSettingsListTheme(),
           (id, newValue) => {
             if (newValue === "enabled") enabledTools.add(id);
