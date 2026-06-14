@@ -22,10 +22,12 @@ export function registerToolMenu(pi: ExtensionAPI): void {
     allTools = pi.getAllTools();
     const allNames = allTools.map((t) => t.name);
 
-    // Find the LAST saved state from session history
-    const branch = ctx.sessionManager.getBranch();
+    // Find the LAST saved state from ALL session entries (not just current branch,
+    // because appendEntry creates a child of the current leaf, which becomes
+    // an alternate branch once new messages are added after closing the menu).
+    const allEntries = ctx.sessionManager.getEntries();
     let savedState: ToolsState | undefined;
-    for (const entry of branch) {
+    for (const entry of allEntries) {
       if (entry.type === "custom" && entry.customType === "ext-manager-tools") {
         const data = entry.data as ToolsState | undefined;
         if (data?.enabledTools) {

@@ -128,7 +128,7 @@ sequenceDiagram
     Note over T: session_start / session_tree
     T->>A: pi.getAllTools()
     T->>A: pi.getActiveTools()
-    T->>S: getBranch()
+    T->>S: getEntries()
     S-->>T: entries[]
     Note over T: поиск ext-manager-tools
     alt Найдена запись
