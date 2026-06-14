@@ -174,15 +174,15 @@ export function saveExtPackageList(items: ExtPackageItem[]): void {
 
   for (const item of items) {
     // Приоритет: _localEnabled (из UI), иначе enabled
-    const enabled = (item as any)._localEnabled ?? item.enabled;
+    const enabled = item._localEnabled ?? item.enabled;
     const cleanRaw = getBase(item.raw);
     const entry = enabled ? cleanRaw : `-${cleanRaw}`;
     if (item.type === "extension") extOutput.push(entry);
     else pkgOutput.push(entry);
   }
 
-  (file as any)["extensions"] = extOutput;
-  (file as any)["packages"] = pkgOutput;
+  (file as Record<string, string[]>)["extensions"] = extOutput;
+  (file as Record<string, string[]>)["packages"] = pkgOutput;
 
   writeSettingsFile(target, file);
 }
@@ -198,12 +198,12 @@ export function saveSkillList(items: SkillItem[]): void {
   const file = readSettingsFile(target);
 
   const skillOutput: string[] = items.map((item) => {
-    const enabled = (item as any)._localEnabled ?? item.enabled;
+    const enabled = item._localEnabled ?? item.enabled;
     const cleanRaw = getBase(item.raw);
     return enabled ? cleanRaw : `-${cleanRaw}`;
   });
 
-  (file as any)["skills"] = skillOutput;
+  (file as Record<string, string[]>)["skills"] = skillOutput;
 
   writeSettingsFile(target, file);
 }
