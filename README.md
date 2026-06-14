@@ -95,8 +95,9 @@ pi-extension-manager/
 ├── index.ts              ← точка входа (default export)
 ├── lib/
 │   ├── settings.ts       ← I/O settings.json: build/save, user+project merge
-│   ├── extension-menu.ts ← команда /extensions
-│   ├── skill-menu.ts     ← команда /skills
+│   ├── settings-menu.ts  ← общий TUI-builder для /extensions и /skills
+│   ├── extension-menu.ts ← команда /extensions (делегирует settings-menu.ts)
+│   ├── skill-menu.ts     ← команда /skills (делегирует settings-menu.ts)
 │   ├── tool-menu.ts      ← команда /tools + session restore
 │   └── shortcuts.ts      ← горячие клавиши Ctrl+Shift+E/T/S
 ├── ARCHITECTURE.md       ← подробная архитектура, потоки данных, заметки
