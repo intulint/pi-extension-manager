@@ -125,6 +125,8 @@ export function registerToolMenu(pi: ExtensionAPI): void {
             else enabledTools.delete(id);
 
             pi.setActiveTools(Array.from(enabledTools));
+            // Persist every toggle so state survives crashes
+            persistTools();
 
             const setting = settingItems.find((s) => s.id === id);
             if (setting) setting.currentValue = newValue;
@@ -133,7 +135,7 @@ export function registerToolMenu(pi: ExtensionAPI): void {
             tui.requestRender();
           },
           () => {
-            // Persist final state only when closing the menu
+            // Extra persist on close for safety
             persistTools();
             done(undefined);
           },
