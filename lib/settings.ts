@@ -26,7 +26,12 @@ export interface SkillItem {
 
 export function readSettingsFile(file: string): Record<string, unknown> {
   if (!fs.existsSync(file)) return {};
-  return JSON.parse(fs.readFileSync(file, "utf-8"));
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf-8"));
+  } catch (err) {
+    console.error(`[pi-extension-manager] Failed to parse settings file: ${file}`, err);
+    return {};
+  }
 }
 
 export function writeSettingsFile(file: string, data: Record<string, unknown>): void {
