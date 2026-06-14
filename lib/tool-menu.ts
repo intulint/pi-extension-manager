@@ -1,30 +1,98 @@
 /**
  * /tools — меню управления инструментами (runtime, без перезагрузки).
+ *
+ * Состояние хранится в двух местах:
+ * 1. Сессия (appendEntry) — для /tree-навигации в рамках одной сессии
+ * 2. Глобальный файл ~/.pi/agent/tools-config.json — между сессиями
+ *
+ * Приоритет восстановления: сессия > глобальный конфиг > все включены
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import type { ExtensionAPI, ExtensionContext, ToolInfo } from "@earendil-works/pi-coding-agent";
 import { getSettingsListTheme } from "@earendil-works/pi-coding-agent";
 import { Container, SettingsList } from "@earendil-works/pi-tui";
 import { DEFAULT_MAX_VISIBLE } from "./settings.js";
 
+// ── Global config ────────────────────────────────────────────────────────────
+
+const GLOBAL_TOOLS_CONFIG_PATH = path.join(
+  process.env.HOME || "/",
+  ".pi",
+  "agent",
+  "tools-config.json",
+);
+
+interface GlobalToolsConfig {
+  enabledTools: string[];
+}
+
+function loadGlobalToolsConfig(): string[] | undefined {
+  try {
+    if (!fs.existsSync(GLOBAL_TOOLS_CONFIG_PATH)) return undefined;
+    const data = JSON.parse(fs.readFileSync(GLOBAL_TOOLS_CONFIG_PATH, "utf-8")) as GlobalToolsConfig;
+    return data.enabledTools;
+  } catch {
+    return undefined;
+  }
+}
+
+function saveGlobalToolsConfig(enabled: string[]): void {
+  try {
+    fs.writeFileSync(
+      GLOBAL_TOOLS_CONFIG_PATH,
+      JSON.stringify({ enabledTools: enabled } as GlobalToolsConfig, null, 2) + "\n",
+    );
+  } catch (err) {
+    console.error("[pi-extension-manager] Failed to save tools config:", err);
+  }
+}
+
+// ── Extension ────────────────────────────────────────────────────────────────
+
 export function registerToolMenu(pi: ExtensionAPI): void {
   let allTools: ToolInfo[] = [];
   let enabledTools: Set<string> = new Set();
 
-  // ── Restore state from session history ───────────────────────────────────
+  // ── State types ──────────────────────────────────────────────────────────
 
   interface ToolsState {
     enabledTools: string[];
     allToolsSnapshot: string[];
   }
 
+  // ── Merge saved set into enabledTools ────────────────────────────────────
+
+  function applyMerged(savedState: ToolsState) {
+    const allNames = allTools.map((t) => t.name);
+    const savedSet = new Set(savedState.enabledTools.filter((t) => allNames.includes(t)));
+    const oldTools = savedState.allToolsSnapshot
+      ? new Set(savedState.allToolsSnapshot)
+      : new Set<string>();
+
+    enabledTools = new Set<string>();
+    for (const name of allNames) {
+      if (savedSet.has(name)) {
+        enabledTools.add(name);
+      } else if (oldTools.has(name)) {
+        // Was disabled by user → keep disabled
+      } else {
+        // NEW tool (didn't exist when state was saved) → enable by default
+        enabledTools.add(name);
+      }
+    }
+
+    pi.setActiveTools(Array.from(enabledTools));
+  }
+
+  // ── Restore state ────────────────────────────────────────────────────────
+
   function restoreState(ctx: ExtensionContext) {
     allTools = pi.getAllTools();
     const allNames = allTools.map((t) => t.name);
 
-    // Find the LAST saved state from ALL session entries (not just current branch,
-    // because appendEntry creates a child of the current leaf, which becomes
-    // an alternate branch once new messages are added after closing the menu).
+    // 1. Try session entries first (for current session / tree navigation)
     const allEntries = ctx.sessionManager.getEntries();
     let savedState: ToolsState | undefined;
     for (const entry of allEntries) {
@@ -37,39 +105,37 @@ export function registerToolMenu(pi: ExtensionAPI): void {
     }
 
     if (savedState) {
-      const savedSet = new Set(savedState.enabledTools.filter((t) => allNames.includes(t)));
-      const oldTools = savedState.allToolsSnapshot
-        ? new Set(savedState.allToolsSnapshot)
-        : new Set<string>();
-
-      // MERGE: start from all current tools, apply saved preferences
-      enabledTools = new Set<string>();
-      for (const name of allNames) {
-        if (savedSet.has(name)) {
-          // Tool was enabled in saved state → enable
-          enabledTools.add(name);
-        } else if (oldTools.has(name)) {
-          // Tool existed when saved, but was disabled by user → keep disabled
-          // (don't add to enabledTools)
-        } else {
-          // NEW tool (didn't exist when state was saved) → enable by default
-          enabledTools.add(name);
-        }
-      }
-
-      pi.setActiveTools(Array.from(enabledTools));
-    } else {
-      // No saved state — sync with currently active tools
-      enabledTools = new Set(pi.getActiveTools());
+      applyMerged(savedState);
+      return;
     }
+
+    // 2. Fallback to global config (cross-session persistence)
+    const globalEnabled = loadGlobalToolsConfig();
+    if (globalEnabled) {
+      const validTools = globalEnabled.filter((t) => allNames.includes(t));
+      enabledTools = new Set(validTools);
+      pi.setActiveTools(Array.from(enabledTools));
+      return;
+    }
+
+    // 3. No saved state at all — sync with current defaults
+    enabledTools = new Set(pi.getActiveTools());
   }
 
+  // ── Persist: session (appendEntry) + global config ──────────────────────
+
   function persistTools() {
+    const enabled = Array.from(enabledTools);
     const allToolsSnapshot = allTools.map((t) => t.name);
+
+    // Save to session for tree navigation
     pi.appendEntry<ToolsState>("ext-manager-tools", {
-      enabledTools: Array.from(enabledTools),
+      enabledTools: enabled,
       allToolsSnapshot,
     });
+
+    // Save to global config for cross-session persistence
+    saveGlobalToolsConfig(enabled);
   }
 
   // ── Session events ───────────────────────────────────────────────────────
@@ -127,7 +193,7 @@ export function registerToolMenu(pi: ExtensionAPI): void {
             else enabledTools.delete(id);
 
             pi.setActiveTools(Array.from(enabledTools));
-            // Persist every toggle so state survives crashes
+            // Persist every toggle so state survives crashes and cross-session
             persistTools();
 
             const setting = settingItems.find((s) => s.id === id);
