@@ -92,14 +92,16 @@ export function buildExtPackageList(): ExtPackageItem[] {
   // Project значения имеют приоритет (перезаписывают user)
   const allExts = [...userExts];
   for (const ext of projExts) {
-    const idx = allExts.indexOf(ext);
+    const base = getBase(ext);
+    const idx = allExts.findIndex(e => getBase(e) === base);
     if (idx !== -1) allExts.splice(idx, 1);
     allExts.push(ext);
   }
 
   const allPkgs = [...userPkgs];
   for (const pkg of projPkgs) {
-    const idx = allPkgs.indexOf(pkg);
+    const base = getBase(pkg);
+    const idx = allPkgs.findIndex(p => getBase(p) === base);
     if (idx !== -1) allPkgs.splice(idx, 1);
     allPkgs.push(pkg);
   }
@@ -142,15 +144,16 @@ export function buildSkillList(): SkillItem[] {
   // Project скиллы имеют приоритет (перезаписывают user)
   const allSkills = [...userSkills];
   for (const skill of projSkills) {
-    const idx = allSkills.indexOf(skill);
+    const base = getBase(skill);
+    const idx = allSkills.findIndex(s => getBase(s) === base);
     if (idx !== -1) allSkills.splice(idx, 1);
     allSkills.push(skill);
   }
 
   return allSkills.map((skillPath) => ({
-    raw: skillPath,
+    raw: getBase(skillPath),
     enabled: !isDisabled(skillPath),
-    displayName: path.basename(skillPath),
+    displayName: path.basename(getBase(skillPath)),
   }));
 }
 
