@@ -12,20 +12,22 @@ export const DEFAULT_MAX_VISIBLE = 20;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export interface ExtPackageItem {
+export interface BaseSettingsItem {
   raw: string;
   enabled: boolean;
   displayName: string;
-  type: "extension" | "package";
+  description: string;
   _localEnabled?: boolean;
 }
 
-export interface SkillItem {
-  raw: string;
-  enabled: boolean;
-  displayName: string;
-  _localEnabled?: boolean;
+export interface ExtPackageItem extends BaseSettingsItem {
+  type: "extension" | "package";
 }
+
+export interface SkillItem extends BaseSettingsItem {}
+
+/** Union of all settings item types for generic operations. */
+export type AnySettingsItem = ExtPackageItem | SkillItem;
 
 // ── File I/O ─────────────────────────────────────────────────────────────────
 
@@ -124,6 +126,7 @@ export function buildExtPackageList(): ExtPackageItem[] {
       raw: base,
       enabled: !isDisabled(ext),
       displayName: labelFromSource(base),
+      description: "Extension",
       type: "extension",
     });
   }
@@ -134,6 +137,7 @@ export function buildExtPackageList(): ExtPackageItem[] {
       raw: base,
       enabled: !isDisabled(pkg),
       displayName: labelFromSource(base),
+      description: "Package",
       type: "package",
     });
   }
@@ -164,6 +168,7 @@ export function buildSkillList(): SkillItem[] {
     raw: getBase(skillPath),
     enabled: !isDisabled(skillPath),
     displayName: path.basename(getBase(skillPath)),
+    description: getBase(skillPath),
   }));
 }
 
