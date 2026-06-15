@@ -92,8 +92,9 @@ export function registerToolMenu(pi: ExtensionAPI): void {
     allTools = pi.getAllTools();
     const allNames = allTools.map((t) => t.name);
 
-    // 1. Try session entries first (for current session / tree navigation)
-    const allEntries = ctx.sessionManager.getEntries();
+    // 1. Try session entries first (for current session / tree navigation).
+    // Use getBranch() — NOT getEntries() — to keep tool state isolated per branch.
+    const allEntries = ctx.sessionManager.getBranch();
     let savedState: ToolsState | undefined;
     for (const entry of allEntries) {
       if (entry.type === "custom" && entry.customType === "ext-manager-tools") {
