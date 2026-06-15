@@ -36,6 +36,11 @@ export function registerSettingsMenu<T extends BaseSettingsItem>(
   pi.registerCommand(opts.commandName, {
     description: opts.description,
     handler: async (_args, ctx) => {
+      if (ctx.mode !== "tui") {
+        ctx.ui.notify(`/${opts.commandName} requires TUI mode`, "error");
+        return;
+      }
+
       const items = opts.buildItems();
       if (items.length === 0) {
         ctx.ui.notify(opts.emptyMessage, "warning");

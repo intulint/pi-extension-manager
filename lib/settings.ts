@@ -35,8 +35,7 @@ export function readSettingsFile(file: string): Record<string, unknown> {
   if (!fs.existsSync(file)) return {};
   try {
     return JSON.parse(fs.readFileSync(file, "utf-8"));
-  } catch (err) {
-    console.error(`[pi-extension-manager] Failed to parse settings file: ${file}`, err);
+  } catch {
     return {};
   }
 }

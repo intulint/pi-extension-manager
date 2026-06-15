@@ -44,8 +44,8 @@ function saveGlobalToolsConfig(enabled: string[]): void {
       GLOBAL_TOOLS_CONFIG_PATH,
       JSON.stringify({ enabledTools: enabled } as GlobalToolsConfig, null, 2) + "\n",
     );
-  } catch (err) {
-    console.error("[pi-extension-manager] Failed to save tools config:", err);
+  } catch {
+    // Silently fail — state is still in session memory
   }
 }
 
