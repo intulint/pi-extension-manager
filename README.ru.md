@@ -21,11 +21,15 @@
 
 ## Установка
 
-```bash
-# Вариант 1: глобально (рекомендуется)
-pi install https://github.com/intulint/pi-extension-manager
+**Вариант 1: глобально (рекомендуется)**
 
-# Вариант 2: скачать копию и установить
+```bash
+pi install https://github.com/intulint/pi-extension-manager
+```
+
+**Вариант 2: скачать и установить локально**
+
+```bash
 git clone https://github.com/intulint/pi-extension-manager
 pi install ./pi-extension-manager
 ```

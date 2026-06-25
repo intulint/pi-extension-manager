@@ -29,11 +29,15 @@
 
 ## Installation
 
-```bash
-# Option 1: Global (recommended)
-pi install https://github.com/intulint/pi-extension-manager
+**Option 1: Global (recommended)**
 
-# Option 2: Download a copy and install
+```bash
+pi install https://github.com/intulint/pi-extension-manager
+```
+
+**Option 2: Download and install locally**
+
+```bash
 git clone https://github.com/intulint/pi-extension-manager
 pi install ./pi-extension-manager
 ```
