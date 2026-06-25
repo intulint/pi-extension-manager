@@ -46,21 +46,13 @@ After installation, run `/reload` in pi.
 
 ### /extensions and /skills — persistent (settings.json)
 
-```
-User: /extensions
-  │
-  ├─ buildExtPackageList()
-  │   ├─ reads ~/.pi/agent/settings.json (user)
-  │   ├─ reads .pi/settings.json (project, if exists)
-  │   └─ merges: project over user
-  │
-  ├─ TUI: list with toggle elements
-  │
-  └─ saveExtPackageList(items)
-      └─ writes to settings.json with '-' prefix
-```
+Commands read extension, package, and skill lists from
+`~/.pi/agent/settings.json` (user-level) and `.pi/settings.json`
+(project-level, if it exists). Project settings take priority
+over user settings when both define the same item.
 
-`settings.json` format:
+Changes are saved to `settings.json`. A `-` prefix marks
+a disabled item:
 
 ```jsonc
 {
@@ -70,51 +62,14 @@ User: /extensions
 }
 ```
 
-**Prefix rules:**
-- `-` before the path = disabled
-- No prefix = enabled
-- When saving, `getBase()` cleans all leading `-`, adds one.
+After saving, run `/reload` in pi to apply the changes.
 
-### /tools — runtime (pi session)
+### /tools — runtime (no reload needed)
 
-```
-User: /tools
-  │
-  ├─ pi.getAllTools()       ← all registered tools
-  ├─ pi.getActiveTools()    ← currently enabled
-  │
-  ├─ TUI: list with toggle
-  │   └─ toggle → pi.setActiveTools() INSTANTLY
-  │
-  └─ on close → persistTools() → pi.appendEntry() to session
-```
-
-**Recovery after `/reload`:** `restoreState()` finds the last entry
-in the session history, applies merge:
-- Tools from the saved state — as they were
-- **New tools** (appeared after saving) — **enabled by default**
-
----
-
-## Project Structure
-
-```
-pi-extension-manager/
-├── index.ts              ← entry point (default export)
-├── lib/
-│   ├── settings.ts       ← I/O settings.json: build/save, user+project merge
-│   ├── settings-menu.ts  ← common TUI-builder for /extensions and /skills
-│   ├── extension-menu.ts ← /extensions command (delegates to settings-menu.ts)
-│   ├── skill-menu.ts     ← /skills command (delegates to settings-menu.ts)
-│   ├── tool-menu.ts      ← /tools command + session restore
-│   └── shortcuts.ts      ← hotkeys Ctrl+Shift+E/T/S
-├── ARCHITECTURE.md       ← detailed architecture, data flows, notes
-└── package.json          ← package metadata
-```
-
-> **Why `lib/`?** Pi scans all `.ts` files in the extension root.
-> Helpers must be in a subdirectory, otherwise pi will try to load them
-> as separate extensions.
+Tools can be toggled on or off instantly — changes take effect
+immediately. Tool state is preserved across sessions and tree
+navigation. New tools (installed after the last save) are
+enabled by default.
 
 ---
 

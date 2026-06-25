@@ -36,23 +36,15 @@ pi install ./pi-extension-manager
 
 ## Как это работает
 
-### /extensions и /skills — persistent (settings.json)
+### /extensions и /skills — постоянное хранение (settings.json)
 
-```
-User: /extensions
-  │
-  ├─ buildExtPackageList()
-  │   ├─ читает ~/.pi/agent/settings.json (user)
-  │   ├─ читает .pi/settings.json (project, если есть)
-  │   └─ сливает: project поверх user
-  │
-  ├─ TUI: список с toggle-элементами
-  │
-  └─ saveExtPackageList(items)
-      └─ записывает в settings.json с префиксом '-'
-```
+Команды читают списки расширений, пакетов и скиллов из
+`~/.pi/agent/settings.json` (уровень пользователя) и `.pi/settings.json`
+(уровень проекта, если есть). Настройки проекта имеют приоритет
+над пользовательскими при совпадении элементов.
 
-Формат `settings.json`:
+Изменения сохраняются в `settings.json`. Префикс `-` отмечает
+отключённый элемент:
 
 ```jsonc
 {
@@ -62,51 +54,14 @@ User: /extensions
 }
 ```
 
-**Правила префиксов:**
-- `-` перед путём = disabled
-- Без префикса = enabled
-- При сохранении `getBase()` чистит все ведущие `-`, добавляет один
+После сохранения выполните `/reload` в pi для применения изменений.
 
-### /tools — runtime (сессия pi)
+### /tools — runtime (без перезагрузки)
 
-```
-User: /tools
-  │
-  ├─ pi.getAllTools()       ← все зарегистрированные инструменты
-  ├─ pi.getActiveTools()    ← текущие включённые
-  │
-  ├─ TUI: список с toggle
-  │   └─ toggle → pi.setActiveTools() МГНОВЕННО
-  │
-  └─ закрытие → persistTools() → pi.appendEntry() в сессию
-```
-
-**Восстановление после /reload:** `restoreState()` находит последнюю запись
-в истории сессии, применяет merge:
-- Инструменты из сохраненного состояния — как было
-- **Новые инструменты** (появились после сохранения) — **включаются по умолчанию**
-
----
-
-## Структура проекта
-
-```
-pi-extension-manager/
-├── index.ts              ← точка входа (default export)
-├── lib/
-│   ├── settings.ts       ← I/O settings.json: build/save, user+project merge
-│   ├── settings-menu.ts  ← общий TUI-builder для /extensions и /skills
-│   ├── extension-menu.ts ← команда /extensions (делегирует settings-menu.ts)
-│   ├── skill-menu.ts     ← команда /skills (делегирует settings-menu.ts)
-│   ├── tool-menu.ts      ← команда /tools + session restore
-│   └── shortcuts.ts      ← горячие клавиши Ctrl+Shift+E/T/S
-├── ARCHITECTURE.md       ← подробная архитектура, потоки данных, заметки
-└── package.json          ← метаданные пакета
-```
-
-> **Почему `lib/`?** Pi сканирует все `.ts`-файлы в корне расширения.
-> Хелперы должны быть в подпапке, иначе pi попытается загрузить их
-> как отдельные расширения.
+Инструменты переключаются мгновенно — изменения вступают в силу сразу.
+Состояние сохраняется между сессиями и при навигации по дереву.
+Новые инструменты (установленные после последнего сохранения)
+включаются по умолчанию.
 
 ---
 
