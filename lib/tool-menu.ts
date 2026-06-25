@@ -170,7 +170,7 @@ export function registerToolMenu(pi: ExtensionAPI): void {
         values: ["enabled", "disabled"],
       }));
 
-      ctx.ui.custom((tui, theme, _kb, done) => {
+      await ctx.ui.custom((tui, theme, _kb, done) => {
         const container = new Container();
         container.addChild(
           new (class {

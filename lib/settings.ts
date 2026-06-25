@@ -18,6 +18,8 @@ export interface BaseSettingsItem {
   displayName: string;
   description: string;
   _localEnabled?: boolean;
+  /** Original raw entry from settings.json (preserves +/! prefixes for save). */
+  _originalEntry?: string;
 }
 
 export interface ExtPackageItem extends BaseSettingsItem {
@@ -56,11 +58,11 @@ export function getSettingsPaths(): { user: string; project: string } {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function isDisabled(item: string): boolean {
-  return item.startsWith("-");
+  return item.startsWith("-") || item.startsWith("!");
 }
 
 function getBase(item: string): string {
-  return item.replace(/^-+/, "");
+  return item.replace(/^[-+!]+/, "");
 }
 
 function labelFromSource(src: string): string {
@@ -127,6 +129,7 @@ export function buildExtPackageList(): ExtPackageItem[] {
       displayName: labelFromSource(base),
       description: "Extension",
       type: "extension",
+      _originalEntry: ext,
     });
   }
 
@@ -138,6 +141,7 @@ export function buildExtPackageList(): ExtPackageItem[] {
       displayName: labelFromSource(base),
       description: "Package",
       type: "package",
+      _originalEntry: pkg,
     });
   }
 
@@ -168,6 +172,7 @@ export function buildSkillList(): SkillItem[] {
     enabled: !isDisabled(skillPath),
     displayName: path.basename(getBase(skillPath)),
     description: getBase(skillPath),
+    _originalEntry: skillPath,
   }));
 }
 
@@ -187,10 +192,23 @@ export function saveExtPackageList(items: ExtPackageItem[]): void {
   const pkgOutput: string[] = [];
 
   for (const item of items) {
-    // Приоритет: _localEnabled (из UI), иначе enabled
     const enabled = item._localEnabled ?? item.enabled;
     const cleanRaw = getBase(item.raw);
-    const entry = enabled ? cleanRaw : `-${cleanRaw}`;
+
+    // Preserve + and ! prefixes — they carry pi override semantics
+    let entry: string;
+    const origPrefix = (item._originalEntry ?? "").match(/^[-+!]+/)?.[0] || "";
+    if (origPrefix.startsWith("!") || origPrefix.startsWith("+")) {
+      // Keep original prefix, only update -/none toggle
+      entry = origPrefix.startsWith("+") && !enabled
+        ? item._originalEntry!.replace(/^\+/, "-")
+        : origPrefix.startsWith("!") && enabled
+          ? item._originalEntry!.replace(/^!/, "")
+          : item._originalEntry!;
+    } else {
+      entry = enabled ? cleanRaw : `-${cleanRaw}`;
+    }
+
     if (item.type === "extension") extOutput.push(entry);
     else pkgOutput.push(entry);
   }
@@ -214,6 +232,18 @@ export function saveSkillList(items: SkillItem[]): void {
   const skillOutput: string[] = items.map((item) => {
     const enabled = item._localEnabled ?? item.enabled;
     const cleanRaw = getBase(item.raw);
+
+    // Preserve + and ! prefixes — they carry pi override semantics
+    const origPrefix = (item._originalEntry ?? "").match(/^[-+!]+/)?.[0] || "";
+    if (origPrefix.startsWith("!") || origPrefix.startsWith("+")) {
+      if (origPrefix.startsWith("+") && !enabled) {
+        return item._originalEntry!.replace(/^\+/, "-");
+      }
+      if (origPrefix.startsWith("!") && enabled) {
+        return item._originalEntry!.replace(/^!/, "");
+      }
+      return item._originalEntry!;
+    }
     return enabled ? cleanRaw : `-${cleanRaw}`;
   });
 
